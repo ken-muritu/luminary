@@ -1,0 +1,9 @@
+{
+  "name": "@luminary/pwa-deploy",
+  "private": true,
+  "version": "3.0.0",
+  "description": "Vercel deploy wrapper for Luminary v3 PWA",
+  "scripts": {
+    "build": "cd ../.. && pnpm build"
+  }
+}

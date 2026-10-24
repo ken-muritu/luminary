@@ -1,0 +1,145 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html, body, #root {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background-color: #13131A;
+    color: #C8C4D7;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #3A3847;
+    border-radius: 2px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #6C5CE7;
+  }
+
+  ::selection {
+    background: rgba(108, 92, 231, 0.3);
+    color: #FFFFFF;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary-gradient text-white font-semibold px-5 py-2.5 rounded-lg
+           transition-all duration-150 hover:opacity-90 hover:shadow-glow active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply bg-transparent text-on-surface-variant font-medium px-5 py-2.5 rounded-lg
+           border border-outline-variant/20 transition-all duration-150 
+           hover:bg-surface-high hover:text-white active:scale-95;
+  }
+
+  .btn-destructive {
+    @apply bg-destructive/10 text-destructive font-medium px-5 py-2.5 rounded-lg
+           border border-destructive/20 transition-all duration-150
+           hover:bg-destructive/20 active:scale-95;
+  }
+
+  .btn-amber {
+    @apply bg-tertiary text-surface font-semibold px-5 py-2.5 rounded-lg
+           transition-all duration-150 hover:bg-amber/90 active:scale-95;
+  }
+
+  .card {
+    @apply bg-surface-container rounded-xl p-4 transition-colors duration-150;
+  }
+
+  .card-hover {
+    @apply card hover:bg-surface-high cursor-pointer;
+  }
+
+  .live-indicator {
+    @apply inline-flex items-center gap-1.5 text-secondary text-xs font-semibold uppercase tracking-wider;
+  }
+
+  .live-dot {
+    @apply w-1.5 h-1.5 rounded-full bg-secondary shadow-glow-green animate-pulse-slow;
+  }
+
+  .section-label {
+    @apply text-text-secondary text-xs font-semibold uppercase tracking-widest;
+  }
+
+  .kbd {
+    @apply inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-mono
+           bg-surface-high text-text-secondary rounded border border-outline-variant/30;
+  }
+
+  .input {
+    @apply w-full bg-surface-high text-on-surface placeholder-text-secondary
+           rounded-lg px-3 py-2 text-sm border border-transparent
+           focus:outline-none focus:border-primary/50 transition-colors duration-150;
+  }
+
+  .panel {
+    @apply bg-surface-low h-full flex flex-col;
+  }
+
+  .floating-panel {
+    @apply bg-surface-bright/95 backdrop-blur-2xl rounded-2xl shadow-float border border-outline-variant/10;
+  }
+
+  .projection-screen {
+    @apply bg-surface-bright rounded-xl overflow-hidden relative;
+    aspect-ratio: 16/9;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    background: linear-gradient(135deg, #6C5CE7, #A29BFE);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .rainbow-border {
+    background: linear-gradient(90deg, #6C5CE7, #00B894, #FDCB6E, #FF6B6B, #6C5CE7);
+    background-size: 200% 100%;
+    animation: rainbow 4s linear infinite;
+  }
+
+  .no-drag {
+    -webkit-app-region: no-drag;
+  }
+
+  .drag {
+    -webkit-app-region: drag;
+  }
+}
+
+@keyframes rainbow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}

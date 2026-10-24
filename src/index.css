@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", system-ui, sans-serif;
+  --color-luminary: #6c5ce7;
+  --color-luminary-accent: #4bddb7;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background: #13131a;
+  color: #fff;
+  -webkit-font-smoothing: antialiased;
+}
+
+.btn-primary {
+  @apply px-4 py-2 rounded-lg bg-[#6c5ce7] hover:bg-[#5b4bd4] text-sm font-medium transition-colors disabled:opacity-50;
+}
+
+.btn-danger {
+  @apply px-4 py-2 rounded-lg bg-red-600/80 hover:bg-red-500 text-sm font-medium transition-colors;
+}
+
+.ctrl-btn {
+  @apply px-3 py-1.5 rounded-lg bg-[#2A2931] hover:bg-[#3a3844] text-xs font-medium transition-colors;
+}

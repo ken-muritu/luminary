@@ -1,0 +1,155 @@
+name: Build & Release
+
+on:
+  push:
+    branches: [main, master]
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Publish to GitHub Releases'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    name: Build Windows (.exe)
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate icons
+        run: node scripts/generate-icons.cjs
+
+      - name: Build application
+        run: |
+          npm run build --workspace=apps/renderer
+          npm run build --workspace=apps/main
+
+      - name: Package Windows portable
+        run: npx electron-builder --win portable --x64
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: luminary-windows
+          path: dist/*.exe
+          if-no-files-found: error
+
+      - name: Upload to Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.exe
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-linux:
+    name: Build Linux (.AppImage)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate icons
+        run: node scripts/generate-icons.cjs
+
+      - name: Build application
+        run: |
+          npm run build --workspace=apps/renderer
+          npm run build --workspace=apps/main
+
+      - name: Package Linux AppImage
+        run: npx electron-builder --linux AppImage --x64
+
+      - name: Upload Linux artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: luminary-linux
+          path: dist/*.AppImage
+          if-no-files-found: error
+
+      - name: Upload to Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.AppImage
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  create-release:
+    name: Create GitHub Release
+    needs: [build-windows, build-linux]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            luminary-windows/*.exe
+            luminary-linux/*.AppImage
+          generate_release_notes: true
+          name: Luminary ${{ github.ref_name }}
+          body: |
+            ## Luminary ${{ github.ref_name }} - Professional Church Presentation Software
+
+            ### Downloads
+            - **Windows** → Download `.exe` (Portable, no installer needed)
+            - **Linux** → Download `.AppImage` (Portable, no installer needed)
+
+            ### Features
+            - Offline-first Bible search with FTS5 (6 translations: KJV, NKJV, NLT, AMP, ASV, WEB)
+            - AI Voice Engine for real-time verse detection
+            - Stage Display for foldback monitors
+            - Media Management with import/export
+            - Setlist Builder with drag-drop
+            - Live Projection with keyboard shortcuts
+
+            ### Installation
+            1. Download the appropriate file for your OS
+            2. Run the executable directly (portable, no installation required)
+            3. Follow the onboarding wizard
+            4. Luminary is ready for Sunday service!
+
+            ### System Requirements
+            - Windows 10/11 (64-bit) or Linux (64-bit)
+            - 4GB RAM minimum, 8GB recommended
+            - 500MB free disk space
+            - For AI Voice: USB audio interface recommended
+
+            ---
+            *Built with ❤️ for the worship community*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

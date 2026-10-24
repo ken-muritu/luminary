@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background-color: #0D0D14;
+    color: #C8C4D7;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  ::-webkit-scrollbar {
+    width: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #13131A;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #3A3847;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #6C5CE7;
+  }
+
+  ::selection {
+    background: rgba(108, 92, 231, 0.3);
+    color: #fff;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2
+           bg-primary-gradient text-white font-semibold
+           px-6 py-3 rounded-xl transition-all duration-200
+           hover:opacity-90 hover:shadow-glow active:scale-95;
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2
+           border border-outline-variant/40 text-on-surface-variant font-medium
+           px-6 py-3 rounded-xl transition-all duration-200
+           hover:border-primary/50 hover:text-white hover:bg-primary/5 active:scale-95;
+  }
+
+  .section-label {
+    @apply text-xs font-semibold uppercase tracking-widest text-text-secondary;
+  }
+
+  .card {
+    @apply bg-surface-container rounded-2xl border border-outline-variant/10
+           transition-all duration-200;
+  }
+
+  .card-hover {
+    @apply card hover:border-primary/20 hover:bg-surface-high;
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, #6C5CE7, #A29BFE);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .gradient-text-green {
+    background: linear-gradient(135deg, #00B894, #00CEC9);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-delay-100 { animation-delay: 100ms; }
+.animate-delay-200 { animation-delay: 200ms; }
+.animate-delay-300 { animation-delay: 300ms; }
+.animate-delay-400 { animation-delay: 400ms; }
+.animate-delay-500 { animation-delay: 500ms; }
+.animate-delay-600 { animation-delay: 600ms; }

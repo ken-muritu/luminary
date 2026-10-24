@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Luminary Output</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      width: 100vw; height: 100vh;
+      background: #000;
+      overflow: hidden;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+
+    #stage {
+      width: 100%; height: 100%;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Background layer */
+    #bg {
+      position: absolute; inset: 0;
+      background: #000;
+      transition: background 0.4s ease;
+      z-index: 0;
+    }
+    #bg.has-image {
+      background-size: cover;
+      background-position: center;
+    }
+
+    /* Freeze overlay */
+    #freeze-layer {
+      position: absolute; inset: 0;
+      z-index: 5;
+      display: none;
+    }
+    #freeze-layer.active { display: block; }
+
+    /* Blackout overlay */
+    #blackout-layer {
+      position: absolute; inset: 0;
+      background: #000;
+      z-index: 10;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    #blackout-layer.active { opacity: 1; }
+
+    /* Logo overlay */
+    #logo-layer {
+      position: absolute; inset: 0;
+      background: #000;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    #logo-layer.active { opacity: 1; }
+    #logo-text {
+      color: #fff;
+      font-size: 4rem;
+      font-weight: 800;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      opacity: 0.15;
+    }
+
+    /* Content layer */
+    #content {
+      position: relative;
+      z-index: 2;
+      width: 85%;
+      max-width: 1600px;
+      text-align: center;
+      padding: 4rem;
+      opacity: 1;
+      transition: opacity 0.25s ease;
+    }
+    #content.fading { opacity: 0; }
+
+    #main-text {
+      color: #ffffff;
+      font-size: 4.5rem;
+      font-weight: 800;
+      line-height: 1.25;
+      white-space: pre-line;
+      letter-spacing: -0.01em;
+      /* text-shadow set dynamically */
+    }
+
+    #sub-text {
+      color: rgba(255,255,255,0.55);
+      font-size: 1.5rem;
+      font-weight: 500;
+      margin-top: 1.25rem;
+      letter-spacing: 0.03em;
+    }
+
+    #reference-text {
+      color: rgba(255,255,255,0.4);
+      font-size: 1.1rem;
+      font-weight: 400;
+      margin-top: 0.75rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    /* Blank state */
+    #blank-state {
+      display: none;
+    }
+
+    body.is-blank #content { display: none; }
+    body.is-blank #blank-state { display: block; }
+    body.is-logo #content { display: none; }
+  </style>
+</head>
+<body>
+  <div id="stage">
+    <div id="bg"></div>
+    <canvas id="freeze-layer"></canvas>
+    <div id="blackout-layer"></div>
+    <div id="logo-layer"><div id="logo-text">Luminary</div></div>
+
+    <div id="content">
+      <div id="main-text"></div>
+      <div id="sub-text"></div>
+      <div id="reference-text"></div>
+    </div>
+
+    <div id="blank-state"></div>
+  </div>
+
+  <script>
+    const mainText   = document.getElementById('main-text')
+    const subText    = document.getElementById('sub-text')
+    const refText    = document.getElementById('reference-text')
+    const content    = document.getElementById('content')
+    const bgLayer    = document.getElementById('bg')
+    const blackout   = document.getElementById('blackout-layer')
+    const logoLayer  = document.getElementById('logo-layer')
+    const freezeLayer = document.getElementById('freeze-layer')
+
+    let config = { fontFamily: 'Inter', fontSize: 72, fontWeight: 'bold', shadowDepth: 50, glowDepth: 30 }
+    let isFrozen = false
+    let freezeCtx = null
+
+    function applyConfig(cfg) {
+      config = Object.assign(config, cfg)
+      const shadow = config.shadowDepth / 100
+      const glow   = config.glowDepth   / 100
+      const blur   = Math.round(glow * 40)
+      const spread = Math.round(glow * 20)
+      mainText.style.fontFamily  = config.fontFamily + ', system-ui, sans-serif'
+      mainText.style.fontSize    = config.fontSize + 'px'
+      mainText.style.fontWeight  = config.fontWeight === 'black' ? '900' : config.fontWeight === 'semibold' ? '600' : '700'
+      mainText.style.textShadow  =
+        `0 ${Math.round(shadow * 8)}px ${Math.round(shadow * 24)}px rgba(0,0,0,${0.5 + shadow * 0.5}),` +
+        `0 0 ${blur}px rgba(255,255,255,${glow * 0.12}),` +
+        `0 0 ${spread}px rgba(255,255,255,${glow * 0.06})`
+    }
+
+    function fadeTransition(fn) {
+      content.classList.add('fading')
+      setTimeout(() => {
+        fn()
+        content.classList.remove('fading')
+      }, 200)
+    }
+
+    function setSlide(payload) {
+      if (isFrozen) return
+
+      if (payload.type === 'blank') {
+        document.body.classList.add('is-blank')
+        return
+      }
+      document.body.classList.remove('is-blank')
+
+      if (payload.type === 'logo') {
+        document.body.classList.add('is-logo')
+        logoLayer.classList.add('active')
+        return
+      }
+      document.body.classList.remove('is-logo')
+      logoLayer.classList.remove('active')
+
+      fadeTransition(() => {
+        mainText.textContent = payload.text || ''
+        subText.textContent  = payload.subtext || ''
+        refText.textContent  = payload.reference || ''
+
+        if (payload.mediaPath) {
+          bgLayer.style.backgroundImage = `url('file://${payload.mediaPath}')`
+          bgLayer.classList.add('has-image')
+        } else {
+          bgLayer.style.backgroundImage = ''
+          bgLayer.classList.remove('has-image')
+        }
+      })
+    }
+
+    function setBlank(isBlank) {
+      blackout.classList.toggle('active', isBlank)
+    }
+
+    function setLogo(isLogo) {
+      logoLayer.classList.toggle('active', isLogo)
+      document.body.classList.toggle('is-logo', isLogo)
+    }
+
+    function setFreeze(freeze) {
+      if (freeze && !isFrozen) {
+        const canvas = freezeLayer
+        canvas.width  = window.innerWidth
+        canvas.height = window.innerHeight
+        freezeCtx = canvas.getContext('2d')
+        html2canvas_simple(canvas, freezeCtx)
+        canvas.classList.add('active')
+        isFrozen = true
+      } else if (!freeze && isFrozen) {
+        freezeLayer.classList.remove('active')
+        isFrozen = false
+      }
+    }
+
+    function html2canvas_simple(canvas, ctx) {
+      // Lightweight freeze: screenshot via CSS screenshot workaround not available in
+      // nodeIntegration:false context. We capture what's rendered using drawImage on
+      // the window — this is a visual approximation; for full freeze use a video element.
+      ctx.fillStyle = '#000'
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+      ctx.font = `${config.fontWeight} ${config.fontSize}px ${config.fontFamily}`
+      ctx.fillStyle = '#fff'
+      ctx.textAlign = 'center'
+      ctx.fillText(mainText.textContent || '', canvas.width / 2, canvas.height / 2)
+    }
+
+    // Electron IPC via contextBridge is not available (sandbox:true, no preload).
+    // Messages arrive via postMessage from the main window or via the
+    // ipcRenderer injected by Electron when nodeIntegration is false.
+    // We use a different strategy: the main process opens a dedicated
+    // channel using the `ipc-message` webContents API path — messages
+    // arrive as custom DOM events dispatched from the main process via
+    // executeJavaScript, or via window.__LUMINARY_OUTPUT__ calls below.
+
+    window.__LUMINARY_OUTPUT__ = {
+      slide:  setSlide,
+      blank:  setBlank,
+      logo:   setLogo,
+      freeze: setFreeze,
+      config: applyConfig,
+    }
+
+    applyConfig(config)
+  </script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+node_modules/
+dist/
+out/
+.DS_Store
+*.log
+*.db
+.env
+.env.local
+
+# Local Netlify folder
+.netlify
+*.exe
+*.AppImage
+*.snap
+*.zip
+win-unpacked/
+linux-unpacked/
+.vercel
+
+# Tauri
+src-tauri/target/
+
+# Playwright
+playwright-report/
+test-results/
+*.tsbuildinfo
+
+# --- secrets and local data (never commit) ---
+.env
+.env.*
+*.env
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+*.pem
+*.key
+*.keystore
+*.jks
+google-services.json
+GoogleService-Info.plist
+.vercel/
+node_modules/
+
+# Copyrighted Bible translations (NKJV, NLT, AMP): obtain under licence, never commit
+public/bible-data/nkjv*
+public/bible-data/nlt*
+public/bible-data/amp*
+legacy/v2/main/assets/bible/nkjv*
+legacy/v2/main/assets/bible/nlt*
+legacy/v2/main/assets/bible/amp*
